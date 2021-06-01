@@ -1,0 +1,17 @@
+Python_1: Correlation analysis between multiple pairs of electronic products.
+Python_2: A web scrapping analysis using elasticsearch database.
+Python_3: A crashlytics analysis based on data from BiGQuery (Google Cloud Platform).
+R_1:      A descriptive analysis using major packages such as purrr, dplyr and tidyverse.
+Rmd_2:    Analysis of food insecurity in Ethiopia
+Rmd_3:    Classification analysis, A KNN algorithm approach: A case of hotel rankings in Italy
+SQL_1:    How to download number of downloads from Google Console
+SQL_2:    Download and manage data for a crashlytics analysis
+SQL_3:    Download and manage data for a crashlytics analysis
+STATA_1:  A research paper 1
+STATA_2:  A research paper 2
+STATA_3:  A research paper 3
+Tableau_1:My training material with a dataset called Tableau_Henok_data.xlsx
+Tableau_2:My training material with a dataset called Tableau_Henok_data.xlsx
+Tableau_3:My training material with a dataset called Tableau_Henok_data.xlsx
+Tableau_Henok_data.xls: Excel file for the tableau workboook.
+Writing_Sample_Henok.pdf: A summary of three PhD thesis

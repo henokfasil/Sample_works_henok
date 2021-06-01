@@ -1,0 +1,132 @@
+---
+title: "Classification analysis, A KNN algorithm approach: A case of hotel rankings in Italy"
+output:
+  html_document:
+    df_print: paged
+---
+#By Henok Fasil Telila, 11.Jan.2020
+###Submitted to ISCS consulting :Jacopo Bertone <jacopo.bertone@iscstorino.com>
+As it is the aim of the assignment, I here by implement Rmarkdown to show the codes, the explanations and any relevant notes about the classification as per the request.
+
+
+```{r, include=FALSE}
+library(dplyr)
+library(ggvis)
+library(class)
+library(gmodels)
+```
+
+```{r, include=FALSE}
+setwd("C:/Users/Henok Fasil/Desktop/conferma_colloquio_iscs")
+df <- read.delim("C:/Users/Henok Fasil/Desktop/conferma_colloquio_iscs/classification_dataset.csv")
+
+```
+For the pre-modelling, I need to assess variables correlation to justify which is better for predicting the target variable "OUTPUT". For this prediciton assignment, I have used R programming language with differnet packages, `ggvis` for visulaization, `class` for knn classification, and  `gmodels` for cross tabulation. 
+
+###Descriptive summary
+The following two codes produces an initial descriptives about the target variable (OUTPUT). They are describing in numbers and in percent.
+```{r}
+table(df$OUTPUT)
+round(prop.table(table(df$OUTPUT)) * 100, digits = 1)
+```
+Descriptive analysis can be done with `ggvis` packages and accordingly as follows:
+
+
+
+```{r}
+df %>% ggvis(~CAMERE, ~LETTI, fill = ~OUTPUT) %>% layer_points() #significant
+  df %>% ggvis(~SUITE, ~BAGNI, fill = ~OUTPUT) %>% layer_points() #significant
+        df %>% ggvis(~CAMERE, ~BAGNI, fill = ~OUTPUT) %>% layer_points()
+          df %>% ggvis(~SUITE, ~LETTI, fill = ~OUTPUT) %>% layer_points()
+```
+
+###Summary
+Descriptive summary is always important to decide if variables shall be normalized or not for an easy KNN algorithms. The selected numerical variables are `CAMERE`, `BAGNI`, `SUITE`, and `LETTI`.
+
+```{r}
+summary(df[c("CAMERE", "BAGNI", "SUITE", "LETTI")])
+```
+
+###Normalization
+Variation (difference between max and min) in the numerical variables suggests for a normalization for the sake of an ease KNN computations. I have developed "normalize function" and run it. 
+```{r include=TRUE}
+#Normalization
+# Build your own `normalize()` function
+normalize <- function(x) {
+  num <- x - min(x)
+  denom <- max(x) - min(x)
+  return (num/denom)
+}
+dfNorm <- as.data.frame(lapply(df[,5:8], normalize))
+```
+
+
+###Training And Test Sets
+The most common splitting choice is to take 2/3 of your original data set as the training set, while the 1/3 that remains will compose the test set.
+
+I use the `sample()` function to take a sample with a size that is set as the number of rows of the data set. I sample with replacement: I choose from a vector of 2 elements and assign either 1 or 2 to the 6775 rows of the data set. The assignment of the elements is subject to probability weights of 0.67 and 0.33.
+
+In this regard, I need to train the target varaible called `OUTPUT` to make them fit of the test and train classification.
+```{r, results="hide"}
+set.seed(1234)
+ind <- sample(2, nrow(df), replace=TRUE, prob=c(0.67, 0.33))
+# Compose training set
+df.training <- dfNorm[ind==1, 1:4]
+
+# Inspect training set
+head(df.training)
+
+# Compose test set
+df.test <- dfNorm[ind==2, 1:4]
+
+# Inspect test set
+head(df.test)
+##set and talk about the OUTPUY
+# Compose `df` training labels
+df.trainLabels <- df[ind==1,5]
+
+# Inspect result
+print(df.trainLabels)
+
+# Compose `df` test labels
+df.testLabels <- df[ind==2, 5]
+
+# Inspect result
+print(df.testLabels)
+
+```
+
+###The KNN Model
+As it is expalined in the code, the chi-square suggest that the predcited model is quite good and no need to improve it such that the KNN supervised MR prediciton is taken as a good prediciton model. If it wouldn't have been, then one can try caret package for "classification and regression training" for complex modelling.
+
+```{r, results="hide"}
+df_pred <- knn(train = df.training, test = df.test, cl = df.trainLabels, k=3)
+
+# Inspect `df_pred`
+print(df_pred)
+
+# Put `df.testLabels` in a data frame
+dfTestLabels <- data.frame(df.testLabels)
+
+# Merge `df_pred` and `df.testLabels` 
+merge <- data.frame(df_pred, dfTestLabels)
+
+# Specify column names for `merge`
+names(merge) <- c("Predicted OUTPUT", "Observed OUTPUT")
+
+# Inspect `merge` 
+merge
+#cross tabulation or a contingency table
+box = CrossTable(x = df.testLabels, y = df_pred, prop.chisq=TRUE)
+
+```
+
+###Reference
+_-	KNN algorithm in R_
+_- RMarkdown_ 
+
+###Attachement
+_- R-codes of my self 11.Jan.2020_
+
+
+**THE END**

@@ -1,0 +1,311 @@
+---
+author: "Henok Fasil Telila"
+date: \today{}
+geometry: margin=2cm
+bibliography: biblio.bib
+output:
+  html_document: default
+  pdf_document: default
+  header-includes:
+    - \usepackage{setspace}
+    - \doublespacing
+    - \usepackage{lineno}
+    - \linenumbers
+---
+
+# HENOK FASIL TELILA
+# Analysis of food insecurity in Ethiopia
+
+# Econometric Analysis 
+
+```{r, include=FALSE, eval=TRUE,warning=FALSE, message=FALSE, error=TRUE}
+#install.packages(c("raster","sp","rgdal","haven","dplyr","pastecs","psych",
+#"fuzzyjoin","geosphere","tidyverse","broom","SPEI","cowplot", "googleway", #"ggplot2", "ggrepel", "ggspatial", "libwgeom", "sf","formatR"), repos = #"http://cran.us.r-project.org")
+library(formatR)
+library(rmarkdown)
+library(Weighted.Desc.Stat) 
+library(raster)
+library(sp)
+library(jtools)
+library(rgdal)
+library(haven)
+library(ggplot2)
+library(pastecs)
+library(psych)
+library(fuzzyjoin)
+library(geosphere)
+library(tidyverse)
+library(broom)
+library(dplyr)
+library(sf)
+library(knitr)
+require(SPEI)
+library(qwraps2)
+
+```
+
+I added the first section to give a glimpse of the dataset and the second section presents the solutions for each question.
+
+# 1) Glimpse of the dataset
+
+### 1.1) The Adminstrative map of Ethiopia at wereda level [My Country]
+
+```{r, opts_chunk$set(tidy.opts=list(width.cutoff=40),tidy=TRUE)}
+path1 = "C:/Users/Asus2/Desktop/FA_EVAL" ;setwd(path1)
+hhshap <- shapefile("ETH_adm3.shp") ;hhdata <- read.csv("Ethiopia_2011.csv")
+      hhdata<-hhdata%>%rename("latitude"="lat_mod_11","longitude"="lon_mod_11")
+          hhshap_f <- tidy(hhshap, region = "NAME_3")
+
+ggplot() + geom_polygon(data = hhshap_f, aes(x = long, y = lat, group = id), 
+          colour = "black", fill = "lightgreen") + theme_void() +
+            geom_sf(aes(fill = )) + ggtitle("Adminstrative map of Ethiopia ")
+#ggsave("admin_map_Ethiopia.pdf") #helps to save to any file
+```
+
+### 1.2) Summary for Household self-reported that food was not enough during (last 12 months)
+
+As we are dealing with food security issues, I summarize at least one major variable that shows those households self-reported that food was not enough during (last 12 months) during the mentioned study period. For those households self-reported that food was not enough during (last 12 months), the average age and size are 46.48 and 5.07, respectively. Meanwhile, for those households that that food was enough, the average age and size are 44.53 and 5.02, respectively.
+
+```{r, warning=FALSE, message=FALSE, error=TRUE}
+food_not_enough <- hhdata %>% filter(food_not_enough12m == 1) #food not enough
+summary(food_not_enough[,c(15,17,19,36)])
+```
+
+### 1.3) Summary for Household that food was enough
+
+```{r, warning=FALSE, message=FALSE, error=TRUE}
+free_enough <- hhdata %>% filter(food_not_enough12m == 0) #food enough
+summary(free_enough[,c(15,17,19,36)])
+```
+
+# 2) 
+
+Rstudio [@allaire2012rstudio] is used for computation. Several packages have been implemented, including Rmarkdown [@baumer2015r].
+
+# Answer (A)
+
+This solution shows the descriptive summary grouped by sex. Particularly, the following table (non-weighted) shows the female-headed household's descriptive summary. There are 893 female-headed households (FHH) and 2659 male-headed households (MHH) included in the survey. The average age for FHH and MHH are 47.66 and 43.32, respectively. However, the maximum age for FHH and MHH are 98 and 100, respectively.
+
+```{r, warning=FALSE, message=FALSE, error=TRUE}
+setwd(path1)
+
+fhead <- hhdata %>% filter(femhead == 1) #Female headed HH
+
+describeBy(hhlabor+agehead+hhsize+hhszae+educhead+educave15_60+area_gps
++landown+TLU_total+dist_market+nmonth_food_insecure+covrain_lt
++mean_rain_lt ~ femhead, data = fhead) #descriptive for female headed
+
+```
+
+A descriptive summary for male headed household.
+
+```{r}
+#Male headed households descriptive summary
+mhead <- hhdata %>% filter(femhead == 0) #Male headed HH
+
+describeBy(hhlabor+agehead+hhsize+hhszae+educhead+educave15_60+area_gps
++landown+TLU_total+dist_market+nmonth_food_insecure+covrain_lt
++mean_rain_lt ~ femhead, data = mhead) #descriptive for female headed
+```
+
+The weighted descriptive statistics are summarized based on the filter condition where the dummy is 1 for FHH and 0, otherwise. The average and the deviation from the mean statistics are included. FHH_mean, MHH_mean, FHH_sd, and MHH_sd stands for variables average for female-headed HH, the average for male-headed HH, the standard deviation (sd) for female-headed HH, and the sd for male-headed HH, respectively. Accordingly, similar to the result of the non-weighted descriptive summary, the average age is 48.52 and 43.59 for FHH and MHH, respectively. The average household size for female-headed (3.81) is smaller than the male-headed HH (5.58). The male-headed HH market (65.3 km) is farther than the female-headed HH (61.90km). The long-term mean precipitation for both is similar.\
+
+For the statistical significance test between the group means, I have considered the variable 'educave15_60' that explains the average HH education of members in the working age. Since the level of education might be related to the sex (who leads the household?) of the household leader, it could be reasonable. The result shows that there is a significant difference between the two groups (male-headed and female-headed household) means demonstrated by the significant p-values.
+
+#### Weighted descriptive statistics by sex
+
+```{r, warning=FALSE, message=FALSE, error=TRUE}
+#Weighted descriptive statistics by sex
+weightedmean <- function(x){ #weighted mean for Female HH
+      w.mean(x, fhead$weight)}
+
+          weightedsd <- function(x){ #Weighted sd for Female HH
+                w.sd(x, fhead$weight)}
+          
+weightedmeanM <- function(x){ #weighted mean for Male HH
+      w.mean(x, mhead$weight)}
+
+          weightedsdM <- function(x){ #weighted sd for Male HH
+                w.sd(x, mhead$weight)}
+          
+fmeans <- as.data.frame(sapply(fhead[,15:36], weightedmean))
+  colnames(fmeans) <- c( "FHH_mean") #Female Headed Household mean
+mmeans <- as.data.frame(sapply(mhead[,15:36], weightedmeanM))
+  colnames(mmeans) <- c( "MHH_mean") #Male Headed Household mean
+fstd   <- as.data.frame(sapply(fhead[,15:36], weightedsd))
+    colnames(fstd) <- c( "FHH_sd") #Female Headed Household standar deviation
+mstd   <- as.data.frame(sapply(mhead[,15:36], weightedsdM))
+    colnames(mstd) <- c( "MHH_sd") #Male Headed Household standard deviation
+
+weighted_obs <- as.data.frame(cbind(fmeans,mmeans,fstd,mstd))
+round(weighted_obs,digits = 2)
+
+```
+
+#### Statistical significance test of the two group means
+
+```{r, warning=FALSE, message=FALSE, error=TRUE}
+#Statistical significance test of the two group means
+t.test(mhead$educave15_60,fhead$educave15_60)
+```
+
+# Answer (B)
+
+Before merging, I have done what we call 'rastering' (by the famous package called 'Raster'). The CHIRPS precipitation data are organized as a tiff file and downloaded with a resolution of (0.05, 0.05) latitude and longitude. The following shows how a single operation is conducted. It is a sample file called 'chirps-v2.0.2011.04.tif' representing the seasonal rainfall for April 2011.
+
+```{r}
+a1 = 'chirps-v2.0.2011.04.tif' #the sesonal rainfall for April 2011
+raster(a1)
+```
+
+The author's multmerge function (see below: ) gives me a data frame consisting of the coordinates and the seasonal precipitation values. Averaging provides a monthly seasonal mean at an African level.
+
+```{r,warning=FALSE, message=FALSE, error=TRUE}
+#This code aims to read the downloaded tiff data, raster and convert to dataframe
+multmerge = function(mypath){
+  #read the files
+  filenames=list.files(path=mypath, full.names=TRUE)
+  #raster the tif file that is downloaded from the website
+  datalist = lapply(filenames, function(x){raster(x)})
+  #convert in to values of the X,Y coordinates
+  datalistx = lapply(datalist, function(x){rasterToPoints(x, spatial = TRUE)})
+  #Convert in to dataframe
+  finaldata = lapply(datalistx, function(x){data.frame(x, xy = TRUE)})
+  #Merge the files
+  Reduce(function(x,y) {merge(x,y)}, finaldata)
+}
+
+mydata = multmerge("C:/Users/Asus2/Desktop/FA_EVAL/new")
+#write.csv(mydata, file="africa_rainfall.csv")
+
+mydata <- read.csv("africa_rainfall.csv"); mydata <- mydata[,-1]
+#Seasonal mean
+seasonal_mean = cbind(mydata[,1:2],as.data.frame(rowMeans(mydata[,5:13])))
+colnames(seasonal_mean) <- c("latitude","longtiude","Seasonal_mean")
+#write.csv(seasonal_mean, file = "africa_seasonalmean.csv")
+#View(seasonal_mean)
+
+seasonal_mean$Seasonal_mean[seasonal_mean$Seasonal_mean==-9999]<-NA
+seasonal_meanx <- na.omit(seasonal_mean)
+head(seasonal_meanx)
+```
+
+### Merging the African seasonal mean data with the ERSS dataset
+
+For this task, since the coordinates (latitude and longitude) in both (the existing data 'Ethiopia_2011.csv' and the downloaded & rastered data 'seasonal_mean' data frame ) data are different even for a small decimal number, I compute it by considering K-Nearest Neighbours with a certain threshold (km). The data frame 'lastmerge' shows the final dataset containing the seasonal mean of precipitations at an African level.
+
+```{r, eval=FALSE,warning=FALSE, message=FALSE, error=TRUE}
+#Merging operation
+
+# substitute seasonal mean of -9999 with NA 
+seasonal_mean$Seasonal_mean[seasonal_mean$Seasonal_mean==-9999]<-NA
+
+# Household ID in eth is not perfectly formatted. 
+# You can open it in csv and see that IDs are repeated.
+# So I'll create a new one assuming that each row is a unique household.
+hhdata$id=1:nrow(hhdata)
+
+# Sample afr (otherwise it's too huge)
+# You can increase sample_size
+sample_size=200000
+set.seed(100)
+afr_sample=seasonal_mean[sample(nrow(seasonal_mean),size=sample_size),]
+
+# Settings: where to look for the seasonal mean
+# maximum distance in km for the point to be even 
+# considered a neighbor
+dist_max=20
+# up to how many nearest neighbors to consider
+k=3 
+
+# merge data
+last_merge <- hhdata %>%
+  geo_left_join(afr_sample,
+                distance_col = "distance",
+                max_dist = dist_max)%>%
+  group_by(id)%>% # do next steps for each household id
+  arrange(distance)%>% #sort by distance so that smaller values are first
+  mutate(closeness_rank=row_number())%>% # closeness rank is 1 for the closests,
+                                     # 2 for the 2nd closests, etc.
+  filter(closeness_rank<=k)%>% # select only k nearest neighbors
+  mutate(Seasonal_mean=mean(Seasonal_mean,na.rm=TRUE))%>% #find their average 
+                                 #seasonal mean
+  filter(closeness_rank==1)%>% # keep 1 row per household
+  select(-distance,-latitude.y,-longitude.y,-closeness_rank) 
+    # get rid of extra columns
+
+  # write merged data to csv
+  #write.csv(last_merge,"eth_merged.csv")
+
+```
+
+# Answer (C)
+
+#### Index creation to identify the presence of drought:
+
+Following [@mckee1993relationship], I applied the Standardized Precipitation Index (SPI) used to define drought periods. Requiring only precipitation as input, the SPI covers a variety of timescales and allows comparison of drought severity both between periods in time and between different locations. McKee et al. (1993) defined the following four drought categories: Mild drought (SPI between 0 and -0.99, occurring 24 % of the time), moderate drought (SPI between -1.00 and -1.49, occurring 9.2 % of the time), severe drought (-1.50 to -1.99, occurring 4.4 % of the time), and extreme drought (SPI -2.00 or less, occurring 2.3 % of the time). A drought event may then be defined as a period during which the SPI is continuously negative and reaches a value of -1 or less at one or more time steps. Drought begins when the SPI first falls below zero and ends with the first positive value. Although there are alternatives, however, the SPI index exploits the gamma distribution [@gebrehiwot2015estimating].
+
+#### SPI for the long-term mean of rainfall precipitations (1981 - 2011)
+
+```{r,warning=FALSE, message=FALSE, error=TRUE, fig.align = "center", fig.height = 6,fig.width = 10, out.width="70%"}
+last_merge <- read.csv("eth_merged.csv")[-1]
+spi_mean = spi(last_merge$mean_rain_lt, scale = 3, distribution = 'Gamma')
+plot(spi_mean,
+main = "SPI index for the long-term mean of rainfall precipitations (1981 - 2011)")
+
+
+```
+
+The SPI for the long-term mean of rainfall precipitations (1981 - 2011) values are between 0 and 2, indicating a moist condition. However, an area to the right part of the figure shows a value between -4 and 0, indicating an extremely dry situation following the National Climatic Data Center (NCDC) definition.
+
+#### SPI for the seasonal mean of rainfall precipitations (Apr - Dec 2011)
+
+```{r,warning=FALSE, message=FALSE, error=TRUE,fig.align = "center", fig.height = 6,fig.width = 10, out.width="70%"}
+#SPI for the seasonal mean
+lastx = na.omit(last_merge)
+spi_season = spi(lastx$Seasonal_mean, scale = 3, distribution = 'Gamma')
+plot(spi_season, main = "SPI index for the seasonal mean of rainfall precipitations (Apr - Dec 2011) ")
+
+
+```
+
+Furthermore, the NCDC defines the range of the SPI as follows. Positive SPI values indicate greater than median precipitation, and negative values indicate less than median precipitation. Relatively high negative deviations represent drought periods. Normally, the 'drought' part of the SPI range is arbitrary split into moderately dry (-1.0 \> SPI \> -1.49), severely dry (-1.5 \> SPI \> -1.99) and extremely dry conditions (SPI \< -2.0).\
+
+Most of the SPI (NA values are excluded) values for the seasonal mean of rainfall precipitations (Apr-Dec 2011) are partially between 0 and 2.5 and between 0 and -4. The positive part of the figure (blue shaded area) shows the values in the moist condition. In contrast, the figure's red part shows the drought range of the seasonal mean of the rainfall precipitations.
+
+# Answer (D)
+
+#### Testing the empirical conditional association:
+
+As the regression output shows, there is a strong association between food aid and household insecurity shown by the statistically significant p-value. Household self-reported that food was not enough during (last 12 months), the dependent variables in the study, takes the value of 1 if food was not enough and 0 otherwise. With 3552 number of observations, the linear model fit has the following output as follows. HH head age, HH members education age, total land owned, distance to the market, HH uses inorganic fertilizer, HH received free food and the long_term mean rainfall significantly influenced household self-reported that food was not enough during (last 12 months).\
+
+As expected, HH labor age, household received credit, HH received extension service, HH access to safe water, HH average asset wealth index, total land cultivated area (gps acres) and total livestock in TLU negatively influenced the dependent variable.
+
+```{r,warning=FALSE, message=FALSE, error=TRUE}
+y <- as.matrix(hhdata[,15:32])
+#y <- as.matrix(last_merge[,c(15:34,35:37,39)])
+
+food_insecurity <- hhdata$food_not_enough12m
+model_1 <- lm(food_insecurity ~ y + hhdata$mean_rain_lt )
+
+summ(model_1,robust = "HC1", pvals = TRUE)
+View(last_merge)
+
+```
+
+# Answer (E)
+
+#### Identification strategy:
+
+There might be a possible bias arising from the non-random assignment of the food aid program, i.e., the household which is already suffering from food insecurity is more likely to get the aid. Thus, when we estimate our average treatment effect, the result will be biased since the assumption of random assignment is not being met. The treatment effect can be estimated using a simple t-test of means for the household which received aid versus those which did not.\
+
+A better alternative would be to run a randomized control trial (RCT). We would cluster the households at the county (wereda) or district level, and then one district would receive the treatment and one would not. After running the RCT, we can estimate, which would give us an unbiased estimate of the treatment's true impact. While this does seem a little bit unethical and would leave out more "deserving" households, the statistical impact will be more accurate.\
+
+Trends might also play a part, as households that were food insecure in the past might be more likely to receive future aid so that an RCT would overcome that effect as well.\
+
+Henok Fasil Telila\
+[henokfasil\@gmail.com](mailto:henokfasil@gmail.com){.email}\
+Jan-31-2021\
+Rome, Italy\
+
+# References

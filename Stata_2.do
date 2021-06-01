@@ -12,15 +12,9 @@ ssc install astile // qaurtile groups / portfolios creation
 //*------------------------------------------------------------------------------
 //                 				 DIRECTORIES
 //=============================================================================*/
-* inputdata\        for all source data files
-* outputdata\       for all data file generated during the process
-* results\          for all output tables
-* literature\       for all related literature 
-* ------------------------------------------------------------------------------
-
 
 * Change to following directory 
-*cd "D:\Dropbox\CODE HOUSE\P626 - Part 2 - Performance Persistence"
+
 cd "C:\Users\Asus2\Section_3_Persistence\Persistent_regresssion_result"
 
 /*------------------------------------------------------------------------------

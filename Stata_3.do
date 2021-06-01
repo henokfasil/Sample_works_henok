@@ -20,9 +20,8 @@ ssc install astile // qaurtile groups / portfolios creation
 
 
 * Change to following directory 
-*cd "D:\Dropbox\CODE HOUSE\P626 - Part 2 - Performance Persistence"
 
-cd "C:\Users\Asus2\OneDrive - Universita' degli Studi di Roma Tor Vergata\1PhD Thesis and Advices\1_first_paper_Investement Funds\1st_Paper_Final_Files\Section_3_Persistence\Persistent_regresssion_result"
+cd "C:\Users\Asus2\Persistence\Persistent_regresssion_result"
 /*------------------------------------------------------------------------------
 * 							For fund type C1
 *=============================================================================*/

@@ -10,9 +10,9 @@
 *SQL_1:*________        How to download number of downloads from Google Console.<br />
 *SQL_2:*________       Download and manage data for a crashlytics analysis.<br />
 *SQL_3:*________        Download and manage data for a crashlytics analysis.<br />
-*STATA_1:*________      A research paper and part of my thesis.<br />
-*STATA_2:*________      Part of my thesis (PhD).<br />
-*STATA_3:*________      Part of my thesis (PhD).<br />
+*STATA_1:*________      A research paper 1.<br />
+*STATA_2:*________      A research paper 2.<br />
+*STATA_3:*________      A research paper 3.<br />
 *Tableau_1:*________    My training material with a dataset called Tableau_Henok_data.xlsx.<br />
 *Tableau_2:*________    My training material with a dataset called Tableau_Henok_data.xlsx.<br />
 *Tableau_3:*________    My training material with a dataset called Tableau_Henok_data.xlsx.<br />

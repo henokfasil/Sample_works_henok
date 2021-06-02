@@ -1,4 +1,3 @@
-# Sample codes and materials
 ## File names description
 
 *Python_1:*________ A Correlation analysis between multiple pairs of electronic products.<br />

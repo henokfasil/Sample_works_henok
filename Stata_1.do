@@ -1,5 +1,5 @@
 *------------------------------------------------------------------------------
-*HENOK FASIL TELILA, paper, Jan 2018
+*------, paper, Jan 2018
 
 ssc install asrol // rolling window statistics 
 ssc install asreg // rolling window and group regressions 

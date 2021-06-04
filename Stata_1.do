@@ -15,12 +15,12 @@ ssc install astile // qaurtile groups / portfolios creation
 
 * Change to following directory 
 
-cd "C:\Users\Asus2\1st_Paper_Final_Files\Section_1_2_Alpha_estimates"
+cd "C:\Users\Asus2\xxxxx"
 /*------------------------------------------------------------------------------
 * 							Part 1 - Alphas
 *=============================================================================*/
 
-use  "inputdata\Part_1_Tekola", clear
+use  "xxxxxxxx", clear
 
 drop mofd
 
